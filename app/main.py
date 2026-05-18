@@ -1,50 +1,35 @@
-import sys, os
-from pathlib import Path
+import sys
+import subprocess
+from app.utils import find_executable
 
 def main():
     builtin_commands = ["exit", "echo", "type"]
-    EXECUTABLE_EXTENSIONS = ['.exe', '.bat', '.cmd', '.com']
-
     
     while True:
-        sys.stdout.write("$ " )
+        sys.stdout.write("$ ")
         command = input()
         if command == "": continue
         if command == "exit": break
         elif command.startswith("echo "): print(command[5:])
         elif command.startswith("type "):
-            if(command[5:] in builtin_commands): print(f"{command[5:]} is a shell builtin")
-            # else : 
-            #     path_val = os.environ.get('PATH')
-            #     GOT_COMMAND = False
-            #     for folder in path_val.split(os.pathsep):
-            #         try:
-            #             files = [f for f in Path(folder).iterdir() if f.is_file() and f.suffix in EXECUTABLE_EXTENSIONS]
-            #         except FileNotFoundError: pass  
-            #         for file in files:
-            #             if command[5:] == file.name[:-4]:
-            #                 print(f"{command[5:]} is {os.path.join(folder, file.name)}")
-            #                 GOT_COMMAND = True
-            #     if not GOT_COMMAND: print(f"{command[5:]}: not found")
-            else: 
-                path_val = os.environ.get('PATH')
-                GOT_COMMAND = False
-                for folder in path_val.split(os.pathsep):
-                    full_path = os.path.join(folder, command[5:])
-                    # Check if file exists AND is executable (Linux-compatible)
-                    if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-                        print(f"{command[5:]} is {full_path}")
-                        GOT_COMMAND = True
-                        break  # Stop searching once found
-                if not GOT_COMMAND: 
+            if command[5:] in builtin_commands:
+                print(f"{command[5:]} is a shell builtin")
+            else:
+                result = find_executable(command[5:])
+                if result:
+                    print(f"{command[5:]} is {result}")
+                else:
                     print(f"{command[5:]}: not found")
-                
-        else: print(f"{command}: command not found")
-    pass
-
-
-
-
+        elif command not in builtin_commands:
+            parts = command.split()  # e.g., ["custom_exe_1234", "alice"]
+            cmd_name = parts[0]
+            cmd_args = parts[1:]
+            print(f"Executing external command: {cmd_name}")
+            result = find_executable(cmd_name)
+            if result:
+                subprocess.run([result] + cmd_args)
+        else:
+            print(f"{command}: command not found")
 
 if __name__ == "__main__":
     main()
