@@ -57,11 +57,14 @@ def main():
                             print(f"cd: {path_string}: No such file or directory")
 
                     elif path_string.startswith("./"):
-                        # print("2")
                         y = CURRENT_DIRECTORY + "" + path_string[1:]
-                        if os.chdir(y):
-                            # print("3")
+                        # print("" + y)
+                        try:
+                            os.chdir(y)
+                            # print("3" + y)
                             CURRENT_DIRECTORY = y
+                        except FileNotFoundError:
+                            pass
                     elif (
                         re.search(r"(?:\.\./)+", path_string)
                         and len(path_string) % 3 == 0
