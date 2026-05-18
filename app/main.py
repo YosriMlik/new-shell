@@ -48,52 +48,54 @@ def main():
                     # print("22")
                     path_string = splitted_command[1]
                     # print("8")
-                    try:
-                        if os.chdir(path_string):
+                    if path_string.startswith("/"):
+                        try:
+                            os.chdir(path_string)
                             # print(path_string + " i s adirectory !")
                             CURRENT_DIRECTORY = path_string
-                        elif path_string.startswith("./"):
-                            # print("2")
-                            y = CURRENT_DIRECTORY + "" + path_string[1:]
-                            if os.chdir(y):
-                                # print("3")
-                                CURRENT_DIRECTORY = y
-                        elif (
-                            re.search(r"(?:\.\./)+", path_string)
-                            and len(path_string) % 3 == 0
+                        except FileNotFoundError:
+                            print(f"cd: {path_string}: No such file or directory")
+
+                    elif path_string.startswith("./"):
+                        # print("2")
+                        y = CURRENT_DIRECTORY + "" + path_string[1:]
+                        if os.chdir(y):
+                            # print("3")
+                            CURRENT_DIRECTORY = y
+                    elif (
+                        re.search(r"(?:\.\./)+", path_string)
+                        and len(path_string) % 3 == 0
+                    ):
+                        # print(f"Current path : {CURRENT_DIRECTORY}")
+                        steps_back = len(path_string) // 3
+                        # print(f"Steps back : {steps_back}")
+                        new_path_string = str(
+                            Path(CURRENT_DIRECTORY).parents[steps_back - 1]
+                        )
+                        CURRENT_DIRECTORY = new_path_string
+                        # print(f"New path : {new_path_string}")
+
+                    else:
+                        last_chance = CURRENT_DIRECTORY + "/" + path_string
+                        # print(f"Last chance for : {last_chance}")
+                        try:
+                            # Attempt to change directory
+                            os.chdir(last_chance)
+
+                            # If it succeeds, Python moves to the next line automatically
+
+                            # Update your variable to the absolute, verified path
+                            CURRENT_DIRECTORY = os.getcwd()
+
+                        except (
+                            FileNotFoundError,
+                            NotADirectoryError,
+                            PermissionError,
                         ):
-                            # print(f"Current path : {CURRENT_DIRECTORY}")
-                            steps_back = len(path_string) // 3
-                            # print(f"Steps back : {steps_back}")
-                            new_path_string = str(
-                                Path(CURRENT_DIRECTORY).parents[steps_back - 1]
-                            )
-                            CURRENT_DIRECTORY = new_path_string
-                            # print(f"New path : {new_path_string}")
+                            # If it fails, Python jumps straight here
+                            pass
+                            # print(f"cd: {path_string}: No such file or directory")
 
-                        else:
-                            last_chance = CURRENT_DIRECTORY + "/" + path_string
-                            # print(f"Last chance for : {last_chance}")
-                            try:
-                                # Attempt to change directory
-                                os.chdir(last_chance)
-
-                                # If it succeeds, Python moves to the next line automatically
-
-                                # Update your variable to the absolute, verified path
-                                CURRENT_DIRECTORY = os.getcwd()
-
-                            except (
-                                FileNotFoundError,
-                                NotADirectoryError,
-                                PermissionError,
-                            ):
-                                # If it fails, Python jumps straight here
-                                pass
-                                # print(f"cd: {path_string}: No such file or directory")
-
-                    except FileNotFoundError:
-                        print(f"cd: {path_string}: No such file or directory")
             else:
                 print(f"cd:{command[2:]}: No such file or directory")
                 # os.chdir(splitted_command[1])
