@@ -48,7 +48,22 @@ def main():
                     # print("22")
                     path_string = splitted_command[1]
                     # print("8")
-                    if path_string.startswith("/"):
+                    if path_string == "~" or path_string.startswith("~/"):
+                        # Provide a fallback string (like "/") in case HOME is missing
+                        home_dir = os.environ.get("HOME", "/")
+
+                        if path_string.startswith("~/"):
+                            target_path = os.path.join(home_dir, path_string[2:])
+                        else:
+                            target_path = home_dir
+
+                        try:
+                            os.chdir(target_path)
+                            CURRENT_DIRECTORY = os.getcwd()
+                        except FileNotFoundError:
+                            print(f"cd: {path_string}: No such file or directory")
+
+                    elif path_string.startswith("/"):
                         try:
                             os.chdir(path_string)
                             # print(path_string + " i s adirectory !")
