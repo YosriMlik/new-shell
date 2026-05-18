@@ -41,7 +41,10 @@ def main():
         elif splitted_command[0] == "cd":
             if len(splitted_command) == 2:
                 if splitted_command[1] != " ":
-                    CURENT_DIRECTORY = splitted_command[1]
+                    if os.path.isdir(splitted_command[1]):
+                        CURENT_DIRECTORY = splitted_command[1]
+                    else:
+                        print(f"cd: {splitted_command[1]}: No such file of directory")
                     # os.chdir(splitted_command[1])
                     # print(splitted_command[1])
 
