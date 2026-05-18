@@ -1,6 +1,8 @@
 import os
+import re
 import subprocess
 import sys
+from pathlib import Path
 
 # from pathlib import Path
 from app.utils import find_executable
@@ -8,7 +10,7 @@ from app.utils import find_executable
 
 def main():
     BUILTIN_COMMANDS = ["exit", "echo", "type", "pwd", "cd"]
-    CURENT_DIRECTORY = os.getcwd()
+    CURRENT_DIRECTORY = os.getcwd()
 
     while True:
         sys.stdout.write("$ ")
@@ -36,17 +38,65 @@ def main():
 
         elif command == "pwd":
             # Get current directory
-            print(CURENT_DIRECTORY)
+            print(CURRENT_DIRECTORY)
 
         elif splitted_command[0] == "cd":
+            # print("0")
             if len(splitted_command) == 2:
+                # print("1")
                 if splitted_command[1] != " ":
-                    if os.path.isdir(splitted_command[1]):
-                        CURENT_DIRECTORY = splitted_command[1]
-                    else:
-                        print(f"cd: {splitted_command[1]}: No such file or directory")
-                    # os.chdir(splitted_command[1])
-                    # print(splitted_command[1])
+                    # print("22")
+                    path_string = splitted_command[1]
+                    # print("8")
+                    try:
+                        if os.chdir(path_string):
+                            # print(path_string + " i s adirectory !")
+                            CURRENT_DIRECTORY = path_string
+                        elif path_string.startswith("./"):
+                            # print("2")
+                            y = CURRENT_DIRECTORY + "" + path_string[1:]
+                            if os.chdir(y):
+                                # print("3")
+                                CURRENT_DIRECTORY = y
+                        elif (
+                            re.search(r"(?:\.\./)+", path_string)
+                            and len(path_string) % 3 == 0
+                        ):
+                            # print(f"Current path : {CURRENT_DIRECTORY}")
+                            steps_back = len(path_string) // 3
+                            # print(f"Steps back : {steps_back}")
+                            new_path_string = str(
+                                Path(CURRENT_DIRECTORY).parents[steps_back - 1]
+                            )
+                            CURRENT_DIRECTORY = new_path_string
+                            # print(f"New path : {new_path_string}")
+
+                        else:
+                            last_chance = CURRENT_DIRECTORY + "/" + path_string
+                            # print(f"Last chance for : {last_chance}")
+                            try:
+                                # Attempt to change directory
+                                os.chdir(last_chance)
+
+                                # If it succeeds, Python moves to the next line automatically
+
+                                # Update your variable to the absolute, verified path
+                                CURRENT_DIRECTORY = os.getcwd()
+
+                            except (
+                                FileNotFoundError,
+                                NotADirectoryError,
+                                PermissionError,
+                            ):
+                                # If it fails, Python jumps straight here
+                                print(f"cd: {path_string}: No such file or directory")
+
+                    except FileNotFoundError:
+                        print(f"cd: {path_string}: No such file or directory")
+            else:
+                print(f"cd:{command[2:]}: No such file or directory")
+                # os.chdir(splitted_command[1])
+                # print(splitted_command[1])
 
         elif find_executable(splitted_command[0]):
             parts = splitted_command  # e.g., ["custom_exe_1234", "alice"]
