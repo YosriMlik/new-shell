@@ -1,17 +1,19 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
 
+# from pathlib import Path
 from app.utils import find_executable
 
 
 def main():
-    builtin_commands = ["exit", "echo", "type", "pwd"]
+    BUILTIN_COMMANDS = ["exit", "echo", "type", "pwd", "cd"]
+    CURENT_DIRECTORY = os.getcwd()
 
     while True:
         sys.stdout.write("$ ")
         command = input()
+        splitted_command = command.split()
 
         if command == "":
             continue
@@ -23,7 +25,7 @@ def main():
             print(command[5:])
 
         elif command.startswith("type "):
-            if command[5:] in builtin_commands:
+            if command[5:] in BUILTIN_COMMANDS:
                 print(f"{command[5:]} is a shell builtin")
             else:
                 result = find_executable(command[5:])
@@ -32,12 +34,19 @@ def main():
                 else:
                     print(f"{command[5:]}: not found")
 
-        elif command.startswith("pwd"):
-            current_path = Path.cwd()
-            print(current_path)
+        elif command == "pwd":
+            # Get current directory
+            print(CURENT_DIRECTORY)
 
-        elif find_executable(command.split()[0]):
-            parts = command.split()  # e.g., ["custom_exe_1234", "alice"]
+        elif splitted_command[0] == "cd":
+            if len(splitted_command) == 2:
+                if splitted_command[1] != " ":
+                    CURENT_DIRECTORY = splitted_command[1]
+                    # os.chdir(splitted_command[1])
+                    # print(splitted_command[1])
+
+        elif find_executable(splitted_command[0]):
+            parts = splitted_command  # e.g., ["custom_exe_1234", "alice"]
             cmd_name = parts[0]
             cmd_args = parts[1:]
             subprocess.run([cmd_name] + cmd_args)
