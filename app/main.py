@@ -44,7 +44,7 @@ def main():
                     if os.path.isdir(splitted_command[1]):
                         CURENT_DIRECTORY = splitted_command[1]
                     else:
-                        print(f"cd: {splitted_command[1]}: No such file of directory")
+                        print(f"cd: {splitted_command[1]}: No such file or directory")
                     # os.chdir(splitted_command[1])
                     # print(splitted_command[1])
 
