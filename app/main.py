@@ -30,9 +30,10 @@ def main():
             cmd_name = parts[0]
             cmd_args = parts[1:]
             # print(f"Executing external command: {cmd_name} - {command.split()[0]}")
-            result = find_executable(cmd_name)
-            if result:
-                subprocess.run([result] + cmd_args)
+            subprocess.run([cmd_name] + cmd_args)
+            # result = find_executable(cmd_name)
+            # if result:
+            #     subprocess.run([result] + cmd_args)
         else:
             print(f"{command}: command not found")
 
