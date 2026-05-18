@@ -21,16 +21,12 @@ def main():
                     try:
                         files = [f for f in Path(folder).iterdir() if f.is_file() and f.suffix in EXECUTABLE_EXTENSIONS]
                     except FileNotFoundError: pass  
-                    #print("\n")
                     for file in files:
-                        #full_path = folder + "" +file.name
-                        #print(file.name[:-4])
                         if command[5:] == file.name[:-4]:
                             print(f"{command[5:]} is {os.path.join(folder, file.name)}")
                             GOT_COMMAND = True
                 if not GOT_COMMAND: print(f"{command[5:]}: not found")
                 
-            #else: print(f"{command[5:]}: not found")
         else: print(f"{command}: command not found")
     pass
 
