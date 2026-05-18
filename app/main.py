@@ -89,7 +89,7 @@ def main():
                                 PermissionError,
                             ):
                                 # If it fails, Python jumps straight here
-                                print(f"cd: {path_string}: No such file or directory")
+                                #print(f"cd: {path_string}: No such file or directory")
 
                     except FileNotFoundError:
                         print(f"cd: {path_string}: No such file or directory")
