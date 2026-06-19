@@ -13,50 +13,30 @@ def main():
         command = input()
         if command == "":
             continue
-
-        # Parse the command line into tokens (handles quotes and escapes)
-        try:
-            tokens = shlex.split(command)
-        except ValueError:
-            # In case of unbalanced quotes, print an error and continue
-            print("error: unbalanced quotes")
-            continue
-
-        if not tokens:
-            continue
-
-        cmd = tokens[0]
-        args = tokens[1:]
-
-        # --- Builtins ---
-        if cmd == "exit":
+        if command == "exit":
             break
-
-        elif cmd == "echo":
-            # echo just prints the arguments separated by a space
-            print(" ".join(args))
-
-        elif cmd == "type":
-            if not args:
-                continue
-            target = args[0]
-            if target in builtin_commands:
-                print(f"{target} is a shell builtin")
+        elif command.startswith("echo "):
+            text = command[5:]
+            print(" ".join(shlex.split(text)))
+        elif command.startswith("type "):
+            if command[5:] in builtin_commands:
+                print(f"{command[5:]} is a shell builtin")
             else:
-                result = find_executable(target)
+                result = find_executable(command[5:])
                 if result:
-                    print(f"{target} is {result}")
+                    print(f"{command[5:]} is {result}")
                 else:
-                    print(f"{target}: not found")
-
+                    print(f"{command[5:]}: not found")
+        elif command not in builtin_commands:
+            parts = shlex.split(command)  # e.g., ["custom_exe_1234", "alice"]
+            cmd_name = parts[0]
+            cmd_args = parts[1:]
+            print(f"Executing external command: {cmd_name}")
+            result = find_executable(cmd_name)
+            if result:
+                subprocess.run([result] + cmd_args)
         else:
-            # External command
-            executable = find_executable(cmd)
-            if executable:
-                # ❌ DO NOT PRINT ANYTHING HERE – the tester expects only the program output
-                subprocess.run([executable] + args)
-            else:
-                print(f"{cmd}: command not found")
+            print(f"{command}: command not found")
 
 
 if __name__ == "__main__":
