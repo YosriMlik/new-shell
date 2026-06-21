@@ -8,7 +8,7 @@ from app.utils import find_executable, split_echo
 
 
 def main():
-    builtin_commands = ["exit", "echo", "type"]
+    builtin_commands = ["exit", "echo", "type", "cd", "pwd"]
 
     while True:
         sys.stdout.write("$ ")
