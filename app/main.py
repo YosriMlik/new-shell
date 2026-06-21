@@ -31,7 +31,8 @@ def main():
             parts = shlex.split(command)  # e.g., ["custom_exe_1234", "alice"]
             cmd_name = parts[0]
             cmd_args = parts[1:]
-            print(f"Executing external command: {cmd_name}")
+            # print(f"Executing external command: {cmd_name}")
+            print(cmd_name)
             result = find_executable(cmd_name)
             if result:
                 subprocess.run([result] + cmd_args)
