@@ -11,7 +11,7 @@ def find_executable(cmd_name):
     for folder in path_val.split(os.pathsep):
         # Linux/Mac: check exact filename
         full_path = os.path.join(folder, cmd_name)
-        if cmd_name == "pwd"
+        if cmd_name == "pwd":
             ic(full_path)
         if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
             return full_path
