@@ -74,7 +74,8 @@ def main():
         else:
             result = find_executable(cmd_name)
             if result:
-                subprocess.run([result] + cmd_args)
+                # Runs the binary in `result`, but sets argv[0] to `cmd_name`
+                subprocess.run([cmd_name] + cmd_args, executable=result)
             else:
                 print(f"{cmd_name}: command not found")
 
