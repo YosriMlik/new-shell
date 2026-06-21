@@ -1,132 +1,83 @@
 import os
-import re
+import shlex
 import subprocess
 import sys
-from pathlib import Path
 
-# from pathlib import Path
 from app.utils import find_executable
 
 
 def main():
-    BUILTIN_COMMANDS = ["exit", "echo", "type", "pwd", "cd"]
-    CURRENT_DIRECTORY = os.getcwd()
+    builtin_commands = ["exit", "echo", "type", "cd", "pwd"]
 
     while True:
         sys.stdout.write("$ ")
         command = input()
-        splitted_command = command.split()
 
-        if command == "":
+        try:
+            parts = shlex.split(command)
+        except ValueError as e:
+            print(f"Error parsing command: {e}")
             continue
 
-        if command == "exit":
+        if not parts:
+            continue
+
+        cmd_name = parts[0]
+        cmd_args = parts[1:]
+
+        # 1. exit
+        if cmd_name == "exit":
             break
 
-        elif command.startswith("echo "):
-            print(command[5:])
+        # 2. echo
+        elif cmd_name == "echo":
+            print(" ".join(cmd_args))
 
-        elif command.startswith("type "):
-            if command[5:] in BUILTIN_COMMANDS:
-                print(f"{command[5:]} is a shell builtin")
+        # 3. type
+        elif cmd_name == "type":
+            if not cmd_args:
+                continue
+            target = cmd_args[0]
+            if target in builtin_commands:
+                print(f"{target} is a shell builtin")
             else:
-                result = find_executable(command[5:])
+                result = find_executable(target)
                 if result:
-                    print(f"{command[5:]} is {result}")
+                    print(f"{target} is {result}")
                 else:
-                    print(f"{command[5:]}: not found")
+                    print(f"{target}: not found")
 
-        elif command == "pwd":
-            # Get current directory
-            print(CURRENT_DIRECTORY)
-
-        elif splitted_command[0] == "cd":
-            # print("0")
-            if len(splitted_command) == 2:
-                # print("1")
-                if splitted_command[1] != " ":
-                    # print("22")
-                    path_string = splitted_command[1]
-                    # print("8")
-                    if path_string == "~" or path_string.startswith("~/"):
-                        # Provide a fallback string (like "/") in case HOME is missing
-                        home_dir = os.environ.get("HOME", "/")
-
-                        if path_string.startswith("~/"):
-                            target_path = os.path.join(home_dir, path_string[2:])
-                        else:
-                            target_path = home_dir
-
-                        try:
-                            os.chdir(target_path)
-                            CURRENT_DIRECTORY = os.getcwd()
-                        except FileNotFoundError:
-                            print(f"cd: {path_string}: No such file or directory")
-
-                    elif path_string.startswith("/"):
-                        try:
-                            os.chdir(path_string)
-                            # print(path_string + " i s adirectory !")
-                            CURRENT_DIRECTORY = path_string
-                        except FileNotFoundError:
-                            print(f"cd: {path_string}: No such file or directory")
-
-                    elif path_string.startswith("./"):
-                        y = CURRENT_DIRECTORY + "" + path_string[1:]
-                        # print("" + y)
-                        try:
-                            os.chdir(y)
-                            # print("3" + y)
-                            CURRENT_DIRECTORY = y
-                        except FileNotFoundError:
-                            pass
-                    elif (
-                        re.search(r"(?:\.\./)+", path_string)
-                        and len(path_string) % 3 == 0
-                    ):
-                        # print(f"Current path : {CURRENT_DIRECTORY}")
-                        steps_back = len(path_string) // 3
-                        # print(f"Steps back : {steps_back}")
-                        new_path_string = str(
-                            Path(CURRENT_DIRECTORY).parents[steps_back - 1]
-                        )
-                        CURRENT_DIRECTORY = new_path_string
-                        # print(f"New path : {new_path_string}")
-
-                    else:
-                        last_chance = CURRENT_DIRECTORY + "/" + path_string
-                        # print(f"Last chance for : {last_chance}")
-                        try:
-                            # Attempt to change directory
-                            os.chdir(last_chance)
-
-                            # If it succeeds, Python moves to the next line automatically
-
-                            # Update your variable to the absolute, verified path
-                            CURRENT_DIRECTORY = os.getcwd()
-
-                        except (
-                            FileNotFoundError,
-                            NotADirectoryError,
-                            PermissionError,
-                        ):
-                            # If it fails, Python jumps straight here
-                            pass
-                            # print(f"cd: {path_string}: No such file or directory")
-
+        # 4. cd
+        elif cmd_name == "cd":
+            if not cmd_args:
+                target_path = os.environ.get("HOME", "/")
             else:
-                print(f"cd:{command[2:]}: No such file or directory")
-                # os.chdir(splitted_command[1])
-                # print(splitted_command[1])
+                path_string = cmd_args[0]
+                if path_string == "~":
+                    target_path = os.environ.get("HOME", "/")
+                elif path_string.startswith("~/"):
+                    home_dir = os.environ.get("HOME", "/")
+                    target_path = os.path.join(home_dir, path_string[2:])
+                else:
+                    target_path = path_string
 
-        elif find_executable(splitted_command[0]):
-            parts = splitted_command  # e.g., ["custom_exe_1234", "alice"]
-            cmd_name = parts[0]
-            cmd_args = parts[1:]
-            subprocess.run([cmd_name] + cmd_args)
+            try:
+                os.chdir(target_path)
+            except FileNotFoundError:
+                print(f"cd: {cmd_args[0]}: No such file or directory")
 
+        # 5. pwd
+        elif cmd_name == "pwd":
+            print(os.getcwd())
+
+        # 6. External Commands
         else:
-            print(f"{command}: command not found")
+            result = find_executable(cmd_name)
+            if result:
+                # Runs the binary in `result`, but sets argv[0] to `cmd_name`
+                subprocess.run([cmd_name] + cmd_args, executable=result)
+            else:
+                print(f"{cmd_name}: command not found")
 
 
 if __name__ == "__main__":
