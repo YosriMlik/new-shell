@@ -32,7 +32,6 @@ def main():
             cmd_name = parts[0]
             cmd_args = parts[1:]
             # print(f"Executing external command: {cmd_name}")
-            print(cmd_name)
             result = find_executable(cmd_name)
             if result:
                 subprocess.run([result] + cmd_args)
