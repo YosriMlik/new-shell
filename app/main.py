@@ -2,6 +2,8 @@ import shlex
 import subprocess
 import sys
 
+from icecream import ic
+
 from app.utils import find_executable, split_echo
 
 
@@ -23,6 +25,7 @@ def main():
                 print(f"{command[5:]} is a shell builtin")
             else:
                 result = find_executable(command[5:])
+                ic(result)
                 if result:
                     print(f"{command[5:]} is {result}")
                 else:
